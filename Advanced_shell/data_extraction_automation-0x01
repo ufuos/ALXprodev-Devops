@@ -1,0 +1,6 @@
+#!/bin/bash
+name=$(jq -r '.name' pokemon.json | sed 's/.*/\u&/')
+type=$(jq -r '.types[0].type.name' pokemon.json | sed 's/.*/\u&/')
+weight=$(jq -r '.weight' pokemon.json)
+height=$(jq -r '.height' pokemon.json)
+awk -v n="$name" -v t="$type" -v w="$weight" -v h="$height" 'BEGIN{printf "%s is of type %s, weighs %skg, and is %sm tall.\n", n, t, w/10, h/10}'
