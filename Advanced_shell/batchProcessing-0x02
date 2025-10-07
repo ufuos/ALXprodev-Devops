@@ -1,25 +1,38 @@
 #!/bin/bash
-# Batch Pokémon Data Retrieval Script
+# Batch Pokémon Data Retrieval Script with Error Handling and Retry Logic
 
 # Directory to store data
 DATA_DIR="pokemon_data"
 mkdir -p "$DATA_DIR"
 
-# List of Pokémon
-POKEMONS=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon")
+# List of Pokémon (you can modify this list)
+POKEMONS=("bulbasaur" "ivysaur" "venusaur" "charmander" "charmeleon" "pikachu" "invalidname")
 
 # Loop through each Pokémon
-for pokemon in "${POKEMONS[@]}"
-do
-  echo "Fetching data for ${pokemon}..."
-  curl -s "https://pokeapi.co/api/v2/pokemon/${pokemon}" -o "${DATA_DIR}/${pokemon}.json"
-  
-  if [ $? -eq 0 ]; then
-    echo "Saved data to ${DATA_DIR}/${pokemon}.json ✅"
-  else
-    echo "Failed to fetch data for ${pokemon} ❌"
+for pokemon in "${POKEMONS[@]}"; do
+  retries=0
+  success=false
+
+  while [ $retries -lt 3 ]; do
+    echo "Fetching data for ${pokemon} (Attempt $((retries+1)) of 3)..."
+    curl -s -f "https://pokeapi.co/api/v2/pokemon/${pokemon}" -o "${DATA_DIR}/${pokemon}.json"
+
+    if [ $? -eq 0 ]; then
+      echo "${pokemon}: Request successful. Saved to ${DATA_DIR}/${pokemon}.json ✅"
+      success=true
+      break
+    else
+      retries=$((retries + 1))
+      echo "Error fetching ${pokemon}. Retrying in 2 seconds..."
+      sleep 2
+    fi
+  done
+
+  if [ "$success" = false ]; then
+    echo "Failed to fetch ${pokemon} after 3 attempts. Skipping..." | tee -a error_log.txt
   fi
 
-  # Handle potential rate limit with a delay
+  # Handle potential API rate limits
   sleep 2
 done
+
