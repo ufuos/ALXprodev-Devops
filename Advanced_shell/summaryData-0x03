@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # Output CSV file
@@ -8,7 +9,7 @@ echo "Name,Height (m),Weight (kg)" > "$output_file"
 
 # Loop through all JSON files generated in Task 2
 for file in *.json; do
-    name=$(jq -r '.name' "$file")
+    name=$(jq -r '.name' "$file" | sed 's/^ *//;s/ *$//')  # use sed to trim spaces
     height=$(jq -r '.height / 10' "$file")  # convert to meters
     weight=$(jq -r '.weight / 10' "$file")  # convert to kilograms
     echo "$name,$height,$weight" >> "$output_file"
@@ -19,11 +20,11 @@ echo "CSV Report generated at: $output_file"
 echo
 
 # Display CSV content
-cat "$output_file"
+cat "$output_file" | sed 's/,/ | /g'  # format output using sed
 echo
 
 # Calculate averages using awk
-awk -F, 'NR>1 {h+=$2; w+=$3; c++} 
+awk -F, 'NR>1 {h+=$2; w+=$3; c++}
 END {
     printf "\nAverage Height: %.2f m\nAverage Weight: %.2f kg\n", h/c, w/c
 }' "$output_file"
