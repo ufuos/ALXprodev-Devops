@@ -8,7 +8,13 @@ for pokemon in "${pokemons[@]}"; do
     curl -s -o "${pokemon}.json" "https://pokeapi.co/api/v2/pokemon/${pokemon}" &
 done
 
+# Show background jobs
+jobs
+
 # Wait for all background processes to finish
 wait
+
+# Optionally clean up any remaining background jobs
+kill $(jobs -p) 2>/dev/null
 
 echo "All Pokémon data fetched successfully."
